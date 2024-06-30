@@ -45,6 +45,11 @@ async function run() {
       const result = await testimonialCollection.insertOne(newTestimonial);
       res.send(result);
     });
+    app.post('/users', async (req, res) => {
+      const newUser = req.body;
+      const result = await testimonialCollection.insertOne(newUser);
+      res.send(result);
+    });
     
   } finally {
     // Ensures that the client will close when you finish/error
