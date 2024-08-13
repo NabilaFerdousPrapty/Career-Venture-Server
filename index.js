@@ -5,7 +5,12 @@ const port = process.env.PORT || 5000;
 const cors = require('cors');
 
 app.use(cors({
-  origin: ["http://localhost:5173"],
+  origin: ["http://localhost:5173",
+    "http://localhost:5174",
+    "https://career-venture.vercel.app",
+
+
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
 }));
@@ -60,7 +65,27 @@ async function run() {
       const result = await userCollections.insertOne(newUser); // Use the correct variable name
       res.send(result);
     });
+    app.get('/users/admin/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email ,role: "admin" };
 
+      const user = await userCollections.findOne(query);
+      res.send(user);
+    });
+ app.get('/users/mentor/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email ,role: "mentor" };
+
+      const user = await userCollections.findOne(query);
+      res.send(user);
+    });
+    app.get('/users/member/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email ,role: "member" };
+
+      const user = await userCollections.findOne(query);
+      res.send(user);
+    });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
