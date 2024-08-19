@@ -38,7 +38,9 @@ async function run() {
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     const testimonialCollection = client.db("Career-Venture").collection("reviews");
-    const userCollections = client.db("Career-Venture").collection("users"); // Corrected variable name
+    const userCollections = client.db("Career-Venture").collection("users"); 
+    const jobOpeningCollection = client.db("Career-Venture").collection("jobOpenings");
+    const jobApplicationCollection = client.db("Career-Venture").collection("jobApplications");
 
     app.get('/testimonials', async (req, res) => {
       const cursor = testimonialCollection.find({});
@@ -85,6 +87,24 @@ async function run() {
 
       const user = await userCollections.findOne(query);
       res.send(user);
+    });
+    app.get('/users/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+
+      const user = await userCollections.findOne(query);
+      res.send(user);
+    });
+    app.post ('/jobOpenning', async (req, res) => {
+      const newJobOpening = req.body;
+      const result = await jobOpeningCollection.insertOne(newJobOpening);
+      res.send(result);
+    }
+    );
+    app.get('/jobOpenning', async (req, res) => {
+      const cursor = jobOpeningCollection.find({});
+      const results = await cursor.toArray();
+      res.send(results);
     });
   } finally {
     // Ensures that the client will close when you finish/error
