@@ -41,6 +41,8 @@ async function run() {
     const userCollections = client.db("Career-Venture").collection("users"); 
     const jobOpeningCollection = client.db("Career-Venture").collection("jobOpenings");
     const jobApplicationCollection = client.db("Career-Venture").collection("jobApplications");
+    const BootCamps= client.db("Career-Venture").collection("BootCamps");
+    const JoinedMembers = client.db("Career-Venture").collection("JoinedMembers");
 
     app.get('/testimonials', async (req, res) => {
       const cursor = testimonialCollection.find({});
@@ -97,7 +99,7 @@ async function run() {
     });
     app.post ('/jobOpenning', async (req, res) => {
       const newJobOpening = req.body;
-      const result = await jobOpeningCollection.insertOne(newJobOpening);
+      const result = await jobOpeningCollection.insertOne(newJobOpening);   
       res.send(result);
     }
     );
