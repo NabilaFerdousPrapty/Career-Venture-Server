@@ -71,23 +71,40 @@ async function run() {
     });
     app.get('/users/admin/:email', async (req, res) => {
       const email = req.params.email;
+      // console.log(email);
+      
       const query = { email: email ,role: "admin" };
-
+      // console.log(query);
+      
+  
       const user = await userCollections.findOne(query);
+      // console.log(user);
+      
       res.send(user);
     });
  app.get('/users/mentor/:email', async (req, res) => {
       const email = req.params.email;
+      // console.log(email);
+      
       const query = { email: email ,role: "mentor" };
+      // console.log(query);
+      
 
       const user = await userCollections.findOne(query);
+      // console.log(user);
+      
       res.send(user);
     });
     app.get('/users/member/:email', async (req, res) => {
       const email = req.params.email;
+      console.log(email);
+      
       const query = { email: email ,role: "member" };
-
+      console.log(query);
+      
       const user = await userCollections.findOne(query);
+      console.log(user);
+      
       res.send(user);
     });
     app.get('/users/:email', async (req, res) => {
