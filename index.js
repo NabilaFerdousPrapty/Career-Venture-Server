@@ -97,13 +97,13 @@ async function run() {
     });
     app.get('/users/member/:email', async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+      // console.log(email);
       
       const query = { email: email ,role: "member" };
-      console.log(query);
+      // console.log(query);
       
       const user = await userCollections.findOne(query);
-      console.log(user);
+      // console.log(user);
       
       res.send(user);
     });
