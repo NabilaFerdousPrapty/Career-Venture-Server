@@ -32,9 +32,9 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server (optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     const testimonialCollection = client.db("Career-Venture").collection("reviews");
@@ -42,7 +42,8 @@ async function run() {
     const jobOpeningCollection = client.db("Career-Venture").collection("jobOpenings");
     const jobApplicationCollection = client.db("Career-Venture").collection("jobApplications");
     const BootCamps= client.db("Career-Venture").collection("BootCamps");
-    const JoinedMembers = client.db("Career-Venture").collection("JoinedMembers");
+    const JoinedMembers = client.db("Career-Venture").collection(
+      "JoinedMembers");
 
     app.get('/testimonials', async (req, res) => {
       const cursor = testimonialCollection.find({});
