@@ -7,7 +7,8 @@ const cors = require('cors');
 app.use(cors({
   origin: ["http://localhost:5173",
     "http://localhost:5174",
-    "https://career-venture.vercel.app",
+    "https://career-venture.web.app",
+    "https://career-venture.firebaseapp.com/"
 
 
   ],
@@ -125,6 +126,17 @@ async function run() {
       const cursor = jobOpeningCollection.find({});
       const results = await cursor.toArray();
       res.send(results);
+    });
+    app.get('/bootCamps', async (req, res) => {
+      const cursor = BootCamps.find({});
+      const results = await cursor.toArray();
+      res.send(results);
+    }
+    );
+    app.post('/bootCamps', async (req, res) => {
+      const newBootCamp = req.body;
+      const result = await BootCamps.insertOne(newBootCamp);
+      res.send(result);
     });
   } finally {
     // Ensures that the client will close when you finish/error
