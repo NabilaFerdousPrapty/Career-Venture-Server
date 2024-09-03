@@ -18,7 +18,7 @@ app.use(cors({
 
 app.use(express.json()); // Middleware to parse JSON request bodies
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pflyccd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -42,7 +42,7 @@ async function run() {
     const userCollections = client.db("Career-Venture").collection("users"); 
     const jobOpeningCollection = client.db("Career-Venture").collection("jobOpenings");
     const jobApplicationCollection = client.db("Career-Venture").collection("jobApplications");
-    const BootCamps= client.db("Career-Venture").collection("BootCamps");
+    const BootCamps= client.db("Career-Venture").collection("Bootcamps");
     const JoinedMembers = client.db("Career-Venture").collection(
       "JoinedMembers");
 
@@ -133,11 +133,24 @@ async function run() {
       res.send(results);
     }
     );
+    app.get('/LearnAboutBootCamp/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await BootCamps.findOne(query);
+        res.send(result);
+      } catch (error) {
+        console.error('Error fetching BootCamp:', error);
+        res.status(500).send({ message: 'Failed to fetch BootCamp', error });
+      }
+    });
+    
     app.post('/bootCamps', async (req, res) => {
       const newBootCamp = req.body;
       const result = await BootCamps.insertOne(newBootCamp);
       res.send(result);
     });
+    
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
