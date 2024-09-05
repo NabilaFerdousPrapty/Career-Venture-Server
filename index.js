@@ -43,6 +43,7 @@ async function run() {
     const jobOpeningCollection = client.db("Career-Venture").collection("jobOpenings");
     const jobApplicationCollection = client.db("Career-Venture").collection("jobApplications");
     const BootCamps= client.db("Career-Venture").collection("Bootcamps");
+    const MentorsCollection=client.db("Career-Venture").collection("Mentors")
     const JoinedMembers = client.db("Career-Venture").collection(
       "JoinedMembers");
 
@@ -150,6 +151,12 @@ async function run() {
       const result = await BootCamps.insertOne(newBootCamp);
       res.send(result);
     });
+    app.get('/approvedMentors', async (req, res) => {
+      const query = { status:'approved' };
+      const user = await MentorsCollection.findOne(query);
+      res.send(results);
+    }
+    );
     
   } finally {
     // Ensures that the client will close when you finish/error
