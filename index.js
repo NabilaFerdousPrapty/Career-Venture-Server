@@ -158,6 +158,14 @@ async function run() {
       res.send(results);
     }
     );
+    app.get('/pendingMentors', async (req, res) => {
+      const query = { status: 'pending' };
+      const cursor = MentorsCollection.find(query);
+      const results = await cursor.toArray();
+      res.send(results);
+    }
+    );
+
 
   } finally {
     // Ensures that the client will close when you finish/error
