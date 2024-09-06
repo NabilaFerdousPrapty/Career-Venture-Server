@@ -39,11 +39,11 @@ async function run() {
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     const testimonialCollection = client.db("Career-Venture").collection("reviews");
-    const userCollections = client.db("Career-Venture").collection("users"); 
+    const userCollections = client.db("Career-Venture").collection("users");
     const jobOpeningCollection = client.db("Career-Venture").collection("jobOpenings");
     const jobApplicationCollection = client.db("Career-Venture").collection("jobApplications");
-    const BootCamps= client.db("Career-Venture").collection("Bootcamps");
-    const MentorsCollection=client.db("Career-Venture").collection("Mentors")
+    const BootCamps = client.db("Career-Venture").collection("Bootcamps");
+    const MentorsCollection = client.db("Career-Venture").collection("Mentors")
     const JoinedMembers = client.db("Career-Venture").collection(
       "JoinedMembers");
 
@@ -75,39 +75,39 @@ async function run() {
     app.get('/users/admin/:email', async (req, res) => {
       const email = req.params.email;
       // console.log(email);
-      
-      const query = { email: email ,role: "admin" };
+
+      const query = { email: email, role: "admin" };
       // console.log(query);
-      
-  
-      const user = await userCollections.findOne(query);
-      // console.log(user);
-      
-      res.send(user);
-    });
- app.get('/users/mentor/:email', async (req, res) => {
-      const email = req.params.email;
-      // console.log(email);
-      
-      const query = { email: email ,role: "mentor" };
-      // console.log(query);
-      
+
 
       const user = await userCollections.findOne(query);
       // console.log(user);
-      
+
+      res.send(user);
+    });
+    app.get('/users/mentor/:email', async (req, res) => {
+      const email = req.params.email;
+      // console.log(email);
+
+      const query = { email: email, role: "mentor" };
+      // console.log(query);
+
+
+      const user = await userCollections.findOne(query);
+      // console.log(user);
+
       res.send(user);
     });
     app.get('/users/member/:email', async (req, res) => {
       const email = req.params.email;
       // console.log(email);
-      
-      const query = { email: email ,role: "member" };
+
+      const query = { email: email, role: "member" };
       // console.log(query);
-      
+
       const user = await userCollections.findOne(query);
       // console.log(user);
-      
+
       res.send(user);
     });
     app.get('/users/:email', async (req, res) => {
@@ -117,9 +117,9 @@ async function run() {
       const user = await userCollections.findOne(query);
       res.send(user);
     });
-    app.post ('/jobOpenning', async (req, res) => {
+    app.post('/jobOpenning', async (req, res) => {
       const newJobOpening = req.body;
-      const result = await jobOpeningCollection.insertOne(newJobOpening);   
+      const result = await jobOpeningCollection.insertOne(newJobOpening);
       res.send(result);
     }
     );
@@ -145,19 +145,20 @@ async function run() {
         res.status(500).send({ message: 'Failed to fetch BootCamp', error });
       }
     });
-    
+
     app.post('/bootCamps', async (req, res) => {
       const newBootCamp = req.body;
       const result = await BootCamps.insertOne(newBootCamp);
       res.send(result);
     });
     app.get('/approvedMentors', async (req, res) => {
-      const query = { status:'approved' };
-      const user = await MentorsCollection.findOne(query);
+      const query = { status: 'approved' };
+      const cursor = MentorsCollection.find(query);
+      const results = await cursor.toArray();
       res.send(results);
     }
     );
-    
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
