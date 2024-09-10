@@ -19,6 +19,7 @@ app.use(cors({
 app.use(express.json()); // Middleware to parse JSON request bodies
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { appendFile } = require('fs');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pflyccd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -134,6 +135,16 @@ async function run() {
       res.send(results);
     }
     );
+    app.get('/jobApplications', async (req, res) => {
+      const cursor = jobApplicationCollection.find({});
+      const results = await cursor.toArray();
+      res.send(results);
+    } );
+    app.post('/jobApplications', async (req, res) => {
+      const newJobApplication = req.body;
+      const result = await jobApplicationCollection.insertOne(newJobApplication);
+      res.send(result);
+    });
     app.get('/LearnAboutBootCamp/:id', async (req, res) => {
       try {
         const id = req.params.id;
