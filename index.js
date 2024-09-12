@@ -47,6 +47,7 @@ async function run() {
     const MentorsCollection = client.db("Career-Venture").collection("Mentors")
     const JoinedMembers = client.db("Career-Venture").collection(
       "JoinedMembers");
+      const resourcesCollection = client.db("Career-Venture").collection("Resources");
 
     app.get('/testimonials', async (req, res) => {
       const cursor = testimonialCollection.find({});
@@ -174,6 +175,19 @@ async function run() {
       const cursor = MentorsCollection.find(query);
       const results = await cursor.toArray();
       res.send(results);
+    }
+    );
+    app.get('/resources', async (req, res) => {
+      const cursor = resourcesCollection.find({});
+      const results = await cursor.toArray();
+      res.send(results);
+    }
+    );
+    app.post('/resources', async (req, res) => {
+      const newResource = req.body;
+      const result = await resourcesCollection.insertOne(newResource
+      );
+      res.send(result);
     }
     );
 
