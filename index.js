@@ -114,6 +114,30 @@ async function run() {
       res.send(results);
     }
     );
+    app.patch('/users/block/:email', async (req, res) => {
+      const email = req.params.email;
+    
+      // Find the user by email to determine their role
+      const user = await userCollections.findOne({ email: email });
+    
+      if (!user) {
+        return res.status(404).send({ message: 'User not found' });
+      }
+    
+      
+      if (user.role === 'member') {
+        const update = { $set: { status: 'blocked' } };
+        const result = await userCollections.updateOne({ email: email, role: 'member' }, update);
+        return res.send(result); // Send result for member update
+      } else if (user.role === 'mentor') {
+        const update = { $set: { status: 'pending' } };
+        const result = await userCollections.updateOne({ email: email, role: 'mentor' }, update);
+        return res.send(result); // Send result for mentor update
+      } else {
+        return res.status(400).send({ message: 'Invalid role for this operation' });
+      }
+    });
+    
     app.get('/users/admin/:email', async (req, res) => {
       const email = req.params.email;
       // console.log(email);
