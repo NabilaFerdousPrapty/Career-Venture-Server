@@ -164,6 +164,21 @@ async function run() {
 
       res.send(user);
     });
+    app.patch('/user/mentor/approve/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email, role: "mentor" };
+      const update = { $set: { status: "approved" } };
+      const result = await userCollections.updateOne(query, update);
+      res.send(result);
+    });
+    app.patch('/user/mentor/reject/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email, role: "mentor" };
+      const update = { $set: { status: "rejected" } };
+      const result = await userCollections.updateOne(query, update);
+      res.send(result);
+    }
+    );
     app.get('/users/member/:email', async (req, res) => {
       const email = req.params.email;
       // console.log(email);
