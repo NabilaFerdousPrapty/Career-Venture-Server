@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
 const cors = require('cors');
-
+const jwt = require('jsonwebtoken');
 app.use(cors({
   origin: ["http://localhost:5173",
     "http://localhost:5174",
@@ -16,7 +16,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
 }));
 
-app.use(express.json()); // Middleware to parse JSON request bodies
+app.use(express.json()); 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { appendFile } = require('fs');
@@ -30,7 +30,20 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+const verifyToken = (req, res, next) => {
+  if (!req?.headers?.authorization) {
+      return res.status(401).send({ message: 'Unauthorized Access' });
+  }
+  const token = req.headers.authorization.split(' ')[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
+      if (error) {
+          return res.status(401).send({ message: 'Unauthorized Access' });
+      }
+      req.decoded = decoded
+      next();
+  })
 
+}
 async function run() {
   try {
     // Connect the client to the server (optional starting in v4.7)
@@ -48,7 +61,28 @@ async function run() {
     const JoinedMembers = client.db("Career-Venture").collection(
       "JoinedMembers");
       const resourcesCollection = client.db("Career-Venture").collection("Resources");
-
+      const newsletterSubscribers = client.db("Career-Venture").collection("newsletterSubscribers");
+      app.post('/jwt', async (req, res) => {
+        const user = req.body;
+        const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: '1d'
+        })
+        res.send({ token });
+    
+    })
+    
+    const verifyAdmin = async (req, res, next) => {
+        const email = req.decoded.email;
+        const query = { email: email };
+        const user = await userCollections.findOne(query);
+        const isAdmin = user?.role === 'admin';
+        if (!isAdmin) {
+            return res.status(403).send({ message: 'Forbidden Access' });
+        }
+        next();
+    }
+    
+    
     app.get('/testimonials', async (req, res) => {
       const cursor = testimonialCollection.find({});
       const results = await cursor.toArray();
@@ -61,7 +95,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post('/users', async (req, res) => {
+    app.post('/users',  async (req, res) => {
       const newUser = req.body;
       const query = { email: newUser.email };
       const existingUser = await userCollections.findOne(query); // Use the correct variable name
@@ -74,6 +108,12 @@ async function run() {
       const result = await userCollections.insertOne(newUser); // Use the correct variable name
       res.send(result);
     });
+    app.get('/users',verifyToken,verifyAdmin, async (req, res) => {
+      const cursor = userCollections.find({});
+      const results = await cursor.toArray();
+      res.send(results);
+    }
+    );
     app.get('/users/admin/:email', async (req, res) => {
       const email = req.params.email;
       // console.log(email);
@@ -190,7 +230,18 @@ async function run() {
       res.send(result);
     }
     );
-
+    app.get('/newsletterSubscribers', async (req, res) => {
+      const cursor = newsletterSubscribers.find({});
+      const results = await cursor.toArray();
+      res.send(results);
+    }
+    );
+    app.post('/newsletterSubscribers', async (req, res) => {
+      const newSubscriber = req.body;
+      const result = await newsletterSubscribers.insertOne(newSubscriber);
+      res.send(result);
+    }
+    );
 
   } finally {
     // Ensures that the client will close when you finish/error
