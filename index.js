@@ -114,12 +114,13 @@ async function run() {
       res.send(results);
     }
     );
+
     app.patch('/users/block/:email', async (req, res) => {
       const email = req.params.email;
     
       // Find the user by email to determine their role
       const user = await userCollections.findOne({ email: email });
-    
+          
       if (!user) {
         return res.status(404).send({ message: 'User not found' });
       }
@@ -136,6 +137,12 @@ async function run() {
       } else {
         return res.status(400).send({ message: 'Invalid role for this operation' });
       }
+    });
+    app.get('/users/member', async (req, res) => {
+      const query = { role: "member",status:"active" };
+      const cursor = userCollections.find(query);
+      const results = await cursor.toArray();
+      res.send(results);
     });
     
     app.get('/users/admin/:email', async (req, res) => {
