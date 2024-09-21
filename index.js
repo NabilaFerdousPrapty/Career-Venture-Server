@@ -276,6 +276,42 @@ async function run() {
       res.send(result);
     }
     );
+    app.patch('/resources/upvote/:postId', async (req, res) => {
+      try {
+          const { postId } = req.params;
+  
+          const query = { _id: new ObjectId(postId) };
+          const result = await resourcesCollection.updateOne(query, { $inc: { upvote: 1 } });
+          if (result.modifiedCount === 1) {
+              res.status(200).json({ message: 'Upvote count updated successfully' });
+          } else {
+              res.status(404).json({ error: 'Query document not found' });
+          }
+      } catch (error) {
+          console.error('Error upvoting post:', error);
+          res.status(500).json({ error: 'Internal Server Error' });
+      }
+  });
+  
+  // Backend API for handling downvotes
+  app.patch('/resources/downvote/:postId', async (req, res) => {
+      try {
+          const { postId } = req.params;
+          // console.log('postId:', postId);
+  
+          const query = { _id: new ObjectId(postId) };
+          const result = await resourcesCollection.updateOne(query, { $inc: { downvote: 1 } });
+  
+          if (result.modifiedCount === 1) {
+              res.status(200).json({ message: 'Downvote count updated successfully' });
+          } else {
+              res.status(404).json({ error: 'Query document not found' });
+          }
+      } catch (error) {
+          console.error('Error downvoting post:', error);
+          res.status(500).json({ error: 'Internal Server Error' });
+      }
+  });
     app.get('/newsletterSubscribers', async (req, res) => {
       const cursor = newsletterSubscribers.find({});
       const results = await cursor.toArray();
