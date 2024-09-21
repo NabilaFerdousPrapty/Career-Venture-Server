@@ -30,6 +30,14 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+app.post('/jwt', async (req, res) => {
+  const user = req.body;
+  const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: '1y'
+  })
+  res.send({ token });
+
+})
 const verifyToken = (req, res, next) => {
   if (!req?.headers?.authorization) {
       return res.status(401).send({ message: 'Unauthorized Access' });
@@ -62,26 +70,17 @@ async function run() {
       "JoinedMembers");
       const resourcesCollection = client.db("Career-Venture").collection("Resources");
       const newsletterSubscribers = client.db("Career-Venture").collection("newsletterSubscribers");
-      app.post('/jwt', async (req, res) => {
-        const user = req.body;
-        const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: '1d'
-        })
-        res.send({ token });
-    
-    })
-    
-    const verifyAdmin = async (req, res, next) => {
-        const email = req.decoded.email;
-        const query = { email: email };
-        const user = await userCollections.findOne(query);
-        const isAdmin = user?.role === 'admin';
-        if (!isAdmin) {
-            return res.status(403).send({ message: 'Forbidden Access' });
-        }
-        next();
-    }
-    
+     
+const verifyAdmin = async (req, res, next) => {
+  const email = req.decoded.email;
+  const query = { email: email };
+  const user = await userCollections.findOne(query);
+  const isAdmin = user?.role === 'admin';
+  if (!isAdmin) {
+      return res.status(403).send({ message: 'Forbidden Access' });
+  }
+  next();
+}
     
     app.get('/testimonials', async (req, res) => {
       const cursor = testimonialCollection.find({});
@@ -171,21 +170,54 @@ async function run() {
 
       res.send(user);
     });
-    app.patch('/user/mentor/approve/:email', async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email, role: "mentor" };
-      const update = { $set: { status: "approved" } };
-      const result = await userCollections.updateOne(query, update);
-      res.send(result);
-    });
-    app.patch('/user/mentor/reject/:email', async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email, role: "mentor" };
-      const update = { $set: { status: "rejected" } };
-      const result = await userCollections.updateOne(query, update);
-      res.send(result);
+   // Approve mentor route
+   app.patch('/user/mentor/approve/:email', async (req, res) => {
+    try {
+        const email = req.params.email.trim().toLowerCase();
+        const query = { email: email };
+
+        console.log('Query:', query);
+        const user = await userCollections.findOne(query);
+        console.log('User Found:', user); // Verify if a user is found
+
+        if (!user) {
+            return res.status(404).send({ message: 'User not found' });
+        }
+
+        const update = { $set: { role: 'mentor' } };
+        const result = await userCollections.updateOne(query, update);
+        console.log('Approve Result:', result); // Debugging log
+
+        if (result.matchedCount === 0) {
+            return res.status(400).send({ message: 'No matching document found to update' });
+        }
+
+        res.send(result);
+    } catch (error) {
+        console.error('Error during update:', error);
+        res.status(500).send({ message: 'Server error' });
     }
-    );
+});
+
+// Reject mentor route
+app.patch('/user/mentor/reject/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const query = { email: email, role: "mentor" };
+    const update = { $set: { status: "rejected" } };
+    const result = await userCollections.updateOne(query, update);
+    console.log('Reject Result:', result); // Debugging log
+    if (result.modifiedCount > 0) {
+      res.status(200).send({ message: "Mentor rejected successfully" });
+    } else {
+      res.status(400).send({ message: "Mentor rejection failed" });
+    }
+  } catch (error) {
+    console.error('Error rejecting mentor:', error);
+    res.status(500).send({ message: "Internal Server Error" });
+  }
+});
+
     app.get('/users/member/:email', async (req, res) => {
       const email = req.params.email;
       // console.log(email);
@@ -261,6 +293,14 @@ async function run() {
       const cursor = MentorsCollection.find(query);
       const results = await cursor.toArray();
       res.send(results);
+    }
+    );
+    app.patch('/mentors/approve/:id', async (req, res) => {
+      
+      const query = { _id: new ObjectId(req.params.id) };
+      const update = { $set: { status: 'approved' } };
+      const result = await MentorsCollection.updateOne(query, update);
+      res.send(result);
     }
     );
     app.get('/resources', async (req, res) => {
@@ -339,3 +379,5 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+
