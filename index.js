@@ -200,23 +200,7 @@ const verifyAdmin = async (req, res, next) => {
 });
 
 // Reject mentor route
-app.patch('/user/mentor/reject/:email', async (req, res) => {
-  try {
-    const email = req.params.email;
-    const query = { email: email, role: "mentor" };
-    const update = { $set: { status: "rejected" } };
-    const result = await userCollections.updateOne(query, update);
-    console.log('Reject Result:', result); // Debugging log
-    if (result.modifiedCount > 0) {
-      res.status(200).send({ message: "Mentor rejected successfully" });
-    } else {
-      res.status(400).send({ message: "Mentor rejection failed" });
-    }
-  } catch (error) {
-    console.error('Error rejecting mentor:', error);
-    res.status(500).send({ message: "Internal Server Error" });
-  }
-});
+
 
     app.get('/users/member/:email', async (req, res) => {
       const email = req.params.email;
@@ -295,10 +279,24 @@ app.patch('/user/mentor/reject/:email', async (req, res) => {
       res.send(results);
     }
     );
+    app.get('/rejectedMentors', async (req, res) => {
+      const query = { status: 'rejected' };
+      const cursor = MentorsCollection.find(query);
+      const results = await cursor.toArray();
+      res.send(results);
+    }
+    );
     app.patch('/mentors/approve/:id', async (req, res) => {
       
       const query = { _id: new ObjectId(req.params.id) };
       const update = { $set: { status: 'approved' } };
+      const result = await MentorsCollection.updateOne(query, update);
+      res.send(result);
+    }
+    );
+    app.patch('/mentors/reject/:id', async (req, res) => {
+      const query = { _id: new ObjectId(req.params.id) };
+      const update = { $set: { status: 'rejected' } };
       const result = await MentorsCollection.updateOne(query, update);
       res.send(result);
     }
