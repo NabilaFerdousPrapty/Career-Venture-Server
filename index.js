@@ -15,6 +15,7 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
 }));
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 app.use(express.json()); 
 
