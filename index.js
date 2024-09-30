@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8000;
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 app.use(cors({
@@ -70,6 +70,7 @@ async function run() {
       "JoinedMembers");
       const resourcesCollection = client.db("Career-Venture").collection("Resources");
       const newsletterSubscribers = client.db("Career-Venture").collection("newsletterSubscribers");
+      const paymentCollection = client.db("Career-Venture").collection("payments");
      
 const verifyAdmin = async (req, res, next) => {
   const email = req.decoded.email;
@@ -362,6 +363,36 @@ const verifyAdmin = async (req, res, next) => {
       res.send(result);
     }
     );
+
+    ///payment related api
+    
+app.post("/create_payment_intent", async (req, res) => {
+  const { price } = req.body;
+  const amount = parseInt(price * 100);
+  const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount,
+      currency: 'usd',
+
+      payment_method_types: ['card']
+  });
+
+  res.send({
+      clientSecret: paymentIntent.client_secret
+
+  });
+  // console.log('secret', paymentIntent.client_secret);
+}
+);
+app.post('/payments', async (req, res) => {
+  const payment = req.body;
+  const paymentResult = await paymentCollection.insertOne(payment);
+
+
+  console.log('payment info', payment);
+
+
+  res.send(payment);
+})
 
   } finally {
     // Ensures that the client will close when you finish/error
