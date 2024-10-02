@@ -230,21 +230,60 @@ const verifyAdmin = async (req, res, next) => {
     }
     );
     app.get('/jobOpenning', async (req, res) => {
+      const page = parseInt(req.query.page) || 1; // Current page number
+      const limit = parseInt(req.query.limit) || 10; // Number of items per page
+      const skip = (page - 1) * limit; // Skip the items for pagination
+    
       const cursor = jobOpeningCollection.find({});
-      const results = await cursor.toArray();
-      res.send(results);
+      const results = await cursor.skip(skip).limit(limit).toArray(); // Apply pagination
+      const totalResults = await jobOpeningCollection.countDocuments(); // Get total count
+    
+      res.send({
+        totalResults,
+        totalPages: Math.ceil(totalResults / limit), // Calculate total pages
+        currentPage: page,
+        results,
+      });
     });
+    
     app.get('/bootCamps', async (req, res) => {
-      const cursor = BootCamps.find({});
-      const results = await cursor.toArray();
-      res.send(results);
-    }
-    );
+      const page = parseInt(req.query.page) || 1; // Default to page 1
+      const limit = parseInt(req.query.limit) || 6; // Default to 6 items per page
+    
+      const skip = (page - 1) * limit; // Calculate how many documents to skip
+    
+      const totalBootCamps = await BootCamps.countDocuments(); // Get total number of boot camps
+      const totalPages = Math.ceil(totalBootCamps / limit); // Calculate total pages
+    
+      const bootCamps = await BootCamps.find({})
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+    
+      res.send({
+        bootCamps,
+        currentPage: page,
+        totalPages,
+        totalBootCamps
+      });
+    });
     app.get('/jobApplications', async (req, res) => {
-      const cursor = jobApplicationCollection.find({});
-      const results = await cursor.toArray();
-      res.send(results);
-    } );
+      const page = parseInt(req.query.page) || 1; // Get the page number from the query params, default to 1
+      const limit = parseInt(req.query.limit) || 6; // Set the limit per page (default is 10)
+      const skip = (page - 1) * limit; // Calculate how many documents to skip
+    
+      const query = {};
+      const cursor = jobApplicationCollection.find(query);
+      const totalJobApplications = await jobApplicationCollection.countDocuments(query); // Total number of job applications
+      const jobApplications = await cursor.skip(skip).limit(limit).toArray(); // Apply pagination
+    
+      res.send({
+        jobApplications,
+        currentPage: page,
+        totalPages: Math.ceil(totalJobApplications / limit), // Total pages based on job application count and limit
+      });
+    });
+    
     app.post('/jobApplications', async (req, res) => {
       const newJobApplication = req.body;
       const result = await jobApplicationCollection.insertOne(newJobApplication);
@@ -268,12 +307,27 @@ const verifyAdmin = async (req, res, next) => {
       res.send(result);
     });
     app.get('/approvedMentors', async (req, res) => {
+      const page = parseInt(req.query.page) || 1; // Get the page number from the query params, default to 1
+      const limit = parseInt(req.query.limit) || 6; // Set the limit per page (default is 10)
+      const skip = (page - 1) * limit; // Calculate how many documents to skip
+    
       const query = { status: 'approved' };
-      const cursor = MentorsCollection.find(query);
-      const results = await cursor.toArray();
-      res.send(results);
-    }
-    );
+      
+      try {
+        const totalMentors = await MentorsCollection.countDocuments(query); // Total number of mentors
+        const mentors = await MentorsCollection.find(query).skip(skip).limit(limit).toArray(); // Apply pagination
+    
+        res.send({
+          mentors,
+          currentPage: page,
+          totalPages: Math.ceil(totalMentors / limit), // Total pages based on mentor count and limit
+        });
+      } catch (error) {
+        res.status(500).json({ error: "Failed to fetch mentors." });
+      }
+    });
+    
+    
     app.get('/pendingMentors', async (req, res) => {
       const query = { status: 'pending' };
       const cursor = MentorsCollection.find(query);
@@ -304,11 +358,22 @@ const verifyAdmin = async (req, res, next) => {
     }
     );
     app.get('/resources', async (req, res) => {
-      const cursor = resourcesCollection.find({});
+      const page = parseInt(req.query.page) || 1; // Default to page 1
+      const limit = parseInt(req.query.limit) || 6; // Default to 6 resources per page
+      const skip = (page - 1) * limit;
+    
+      const cursor = resourcesCollection.find({}).skip(skip).limit(limit);
       const results = await cursor.toArray();
-      res.send(results);
-    }
-    );
+      const totalItems = await resourcesCollection.countDocuments();
+    
+      res.send({
+        resources: results,
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      });
+    });
+    
     app.post('/resources', async (req, res) => {
       const newResource = req.body;
       const result = await resourcesCollection.insertOne(newResource
