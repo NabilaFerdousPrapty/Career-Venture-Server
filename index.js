@@ -361,18 +361,34 @@ const verifyAdmin = async (req, res, next) => {
       const page = parseInt(req.query.page) || 1; // Default to page 1
       const limit = parseInt(req.query.limit) || 6; // Default to 6 resources per page
       const skip = (page - 1) * limit;
+      
+      // Extract search term (tags) from query string
+      const searchTag = req.query.search || '';
     
-      const cursor = resourcesCollection.find({}).skip(skip).limit(limit);
-      const results = await cursor.toArray();
-      const totalItems = await resourcesCollection.countDocuments();
+      // Create a filter to search resources based on tags if the search term is provided
+      const filter = searchTag 
+        ? { tags: { $regex: searchTag, $options: 'i' } } // Case-insensitive search for tags
+        : {}; // No filter if no search term is provided
     
-      res.send({
-        resources: results,
-        totalItems,
-        totalPages: Math.ceil(totalItems / limit),
-        currentPage: page,
-      });
+      try {
+        // Find resources that match the search criteria and paginate results
+        const cursor = resourcesCollection.find(filter).skip(skip).limit(limit);
+        const results = await cursor.toArray();
+        const totalItems = await resourcesCollection.countDocuments(filter); // Count matching resources
+    
+        // Send response with the filtered and paginated resources
+        res.send({
+          resources: results,
+          totalItems,
+          totalPages: Math.ceil(totalItems / limit),
+          currentPage: page,
+        });
+      } catch (error) {
+        console.error('Error fetching resources:', error);
+        res.status(500).send({ message: 'Error fetching resources' });
+      }
     });
+    
     
     app.post('/resources', async (req, res) => {
       const newResource = req.body;
@@ -403,7 +419,8 @@ const verifyAdmin = async (req, res, next) => {
       try {
           const { postId } = req.params;
           // console.log('postId:', postId);
-  
+         console.log('postId:', postId);
+         
           const query = { _id: new ObjectId(postId) };
           const result = await resourcesCollection.updateOne(query, { $inc: { downvote: 1 } });
   
