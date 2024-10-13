@@ -17,7 +17,7 @@ app.use(cors({
 }));
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-app.use(express.json()); 
+app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { appendFile } = require('fs');
@@ -34,22 +34,22 @@ const client = new MongoClient(uri, {
 app.post('/jwt', async (req, res) => {
   const user = req.body;
   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: '1y'
+    expiresIn: '1y'
   })
   res.send({ token });
 
 })
 const verifyToken = (req, res, next) => {
   if (!req?.headers?.authorization) {
-      return res.status(401).send({ message: 'Unauthorized Access' });
+    return res.status(401).send({ message: 'Unauthorized Access' });
   }
   const token = req.headers.authorization.split(' ')[1];
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
-      if (error) {
-          return res.status(401).send({ message: 'Unauthorized Access' });
-      }
-      req.decoded = decoded
-      next();
+    if (error) {
+      return res.status(401).send({ message: 'Unauthorized Access' });
+    }
+    req.decoded = decoded
+    next();
   })
 
 }
@@ -69,21 +69,21 @@ async function run() {
     const MentorsCollection = client.db("Career-Venture").collection("Mentors")
     const JoinedMembers = client.db("Career-Venture").collection(
       "JoinedMembers");
-      const resourcesCollection = client.db("Career-Venture").collection("Resources");
-      const newsletterSubscribers = client.db("Career-Venture").collection("newsletterSubscribers");
-      const paymentCollection = client.db("Career-Venture").collection("payments");
-     
-const verifyAdmin = async (req, res, next) => {
-  const email = req.decoded.email;
-  const query = { email: email };
-  const user = await userCollections.findOne(query);
-  const isAdmin = user?.role === 'admin';
-  if (!isAdmin) {
-      return res.status(403).send({ message: 'Forbidden Access' });
-  }
-  next();
-}
-    
+    const resourcesCollection = client.db("Career-Venture").collection("Resources");
+    const newsletterSubscribers = client.db("Career-Venture").collection("newsletterSubscribers");
+    const paymentCollection = client.db("Career-Venture").collection("payments");
+
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollections.findOne(query);
+      const isAdmin = user?.role === 'admin';
+      if (!isAdmin) {
+        return res.status(403).send({ message: 'Forbidden Access' });
+      }
+      next();
+    }
+
     app.get('/testimonials', async (req, res) => {
       const cursor = testimonialCollection.find({});
       const results = await cursor.toArray();
@@ -96,7 +96,7 @@ const verifyAdmin = async (req, res, next) => {
       res.send(result);
     });
 
-    app.post('/users',  async (req, res) => {
+    app.post('/users', async (req, res) => {
       const newUser = req.body;
       const query = { email: newUser.email };
       const existingUser = await userCollections.findOne(query); // Use the correct variable name
@@ -109,7 +109,7 @@ const verifyAdmin = async (req, res, next) => {
       const result = await userCollections.insertOne(newUser); // Use the correct variable name
       res.send(result);
     });
-    app.get('/users',verifyToken,verifyAdmin, async (req, res) => {
+    app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
       const cursor = userCollections.find({});
       const results = await cursor.toArray();
       res.send(results);
@@ -118,15 +118,15 @@ const verifyAdmin = async (req, res, next) => {
 
     app.patch('/users/block/:email', async (req, res) => {
       const email = req.params.email;
-    
+
       // Find the user by email to determine their role
       const user = await userCollections.findOne({ email: email });
-          
+
       if (!user) {
         return res.status(404).send({ message: 'User not found' });
       }
-    
-      
+
+
       if (user.role === 'member') {
         const update = { $set: { status: 'blocked' } };
         const result = await userCollections.updateOne({ email: email, role: 'member' }, update);
@@ -140,12 +140,12 @@ const verifyAdmin = async (req, res, next) => {
       }
     });
     app.get('/users/member', async (req, res) => {
-      const query = { role: "member",status:"active" };
+      const query = { role: "member", status: "active" };
       const cursor = userCollections.find(query);
       const results = await cursor.toArray();
       res.send(results);
     });
-    
+
     app.get('/users/admin/:email', async (req, res) => {
       const email = req.params.email;
       // console.log(email);
@@ -172,9 +172,9 @@ const verifyAdmin = async (req, res, next) => {
 
       res.send(user);
     });
-   // Approve mentor route
-   app.patch('/user/mentor/approve/:email', async (req, res) => {
-    try {
+    // Approve mentor route
+    app.patch('/user/mentor/approve/:email', async (req, res) => {
+      try {
         const email = req.params.email.trim().toLowerCase();
         const query = { email: email };
 
@@ -183,7 +183,7 @@ const verifyAdmin = async (req, res, next) => {
         console.log('User Found:', user); // Verify if a user is found
 
         if (!user) {
-            return res.status(404).send({ message: 'User not found' });
+          return res.status(404).send({ message: 'User not found' });
         }
 
         const update = { $set: { role: 'mentor' } };
@@ -191,17 +191,17 @@ const verifyAdmin = async (req, res, next) => {
         console.log('Approve Result:', result); // Debugging log
 
         if (result.matchedCount === 0) {
-            return res.status(400).send({ message: 'No matching document found to update' });
+          return res.status(400).send({ message: 'No matching document found to update' });
         }
 
         res.send(result);
-    } catch (error) {
+      } catch (error) {
         console.error('Error during update:', error);
         res.status(500).send({ message: 'Server error' });
-    }
-});
+      }
+    });
 
-// Reject mentor route
+    // Reject mentor route
 
 
     app.get('/users/member/:email', async (req, res) => {
@@ -233,11 +233,11 @@ const verifyAdmin = async (req, res, next) => {
       const page = parseInt(req.query.page) || 1; // Current page number
       const limit = parseInt(req.query.limit) || 10; // Number of items per page
       const skip = (page - 1) * limit; // Skip the items for pagination
-    
+
       const cursor = jobOpeningCollection.find({});
       const results = await cursor.skip(skip).limit(limit).toArray(); // Apply pagination
       const totalResults = await jobOpeningCollection.countDocuments(); // Get total count
-    
+
       res.send({
         totalResults,
         totalPages: Math.ceil(totalResults / limit), // Calculate total pages
@@ -245,21 +245,27 @@ const verifyAdmin = async (req, res, next) => {
         results,
       });
     });
-    
+
     app.get('/bootCamps', async (req, res) => {
       const page = parseInt(req.query.page) || 1; // Default to page 1
       const limit = parseInt(req.query.limit) || 6; // Default to 6 items per page
-    
+      const search = req.query.search || ""; // Get the search query
+
       const skip = (page - 1) * limit; // Calculate how many documents to skip
-    
-      const totalBootCamps = await BootCamps.countDocuments(); // Get total number of boot camps
+
+      // Create a search condition based on the name
+      const searchCondition = search ? { name: { $regex: search, $options: 'i' } } : {};
+
+
+      const totalBootCamps = await BootCamps.countDocuments(searchCondition); // Get total number of boot camps matching the search
       const totalPages = Math.ceil(totalBootCamps / limit); // Calculate total pages
-    
-      const bootCamps = await BootCamps.find({})
+
+      // Fetch boot camps with search, pagination, and limiting
+      const bootCamps = await BootCamps.find(searchCondition)
         .skip(skip)
         .limit(limit)
         .toArray();
-    
+
       res.send({
         bootCamps,
         currentPage: page,
@@ -267,23 +273,24 @@ const verifyAdmin = async (req, res, next) => {
         totalBootCamps
       });
     });
+
     app.get('/jobApplications', async (req, res) => {
       const page = parseInt(req.query.page) || 1; // Get the page number from the query params, default to 1
       const limit = parseInt(req.query.limit) || 6; // Set the limit per page (default is 10)
       const skip = (page - 1) * limit; // Calculate how many documents to skip
-    
+
       const query = {};
       const cursor = jobApplicationCollection.find(query);
       const totalJobApplications = await jobApplicationCollection.countDocuments(query); // Total number of job applications
       const jobApplications = await cursor.skip(skip).limit(limit).toArray(); // Apply pagination
-    
+
       res.send({
         jobApplications,
         currentPage: page,
         totalPages: Math.ceil(totalJobApplications / limit), // Total pages based on job application count and limit
       });
     });
-    
+
     app.post('/jobApplications', async (req, res) => {
       const newJobApplication = req.body;
       const result = await jobApplicationCollection.insertOne(newJobApplication);
@@ -310,13 +317,13 @@ const verifyAdmin = async (req, res, next) => {
       const page = parseInt(req.query.page) || 1; // Get the page number from the query params, default to 1
       const limit = parseInt(req.query.limit) || 6; // Set the limit per page (default is 10)
       const skip = (page - 1) * limit; // Calculate how many documents to skip
-    
+
       const query = { status: 'approved' };
-      
+
       try {
         const totalMentors = await MentorsCollection.countDocuments(query); // Total number of mentors
         const mentors = await MentorsCollection.find(query).skip(skip).limit(limit).toArray(); // Apply pagination
-    
+
         res.send({
           mentors,
           currentPage: page,
@@ -326,8 +333,8 @@ const verifyAdmin = async (req, res, next) => {
         res.status(500).json({ error: "Failed to fetch mentors." });
       }
     });
-    
-    
+
+
     app.get('/pendingMentors', async (req, res) => {
       const query = { status: 'pending' };
       const cursor = MentorsCollection.find(query);
@@ -343,7 +350,7 @@ const verifyAdmin = async (req, res, next) => {
     }
     );
     app.patch('/mentors/approve/:id', async (req, res) => {
-      
+
       const query = { _id: new ObjectId(req.params.id) };
       const update = { $set: { status: 'approved' } };
       const result = await MentorsCollection.updateOne(query, update);
@@ -361,21 +368,21 @@ const verifyAdmin = async (req, res, next) => {
       const page = parseInt(req.query.page) || 1; // Default to page 1
       const limit = parseInt(req.query.limit) || 6; // Default to 6 resources per page
       const skip = (page - 1) * limit;
-      
+
       // Extract search term (tags) from query string
       const searchTag = req.query.search || '';
-    
+
       // Create a filter to search resources based on tags if the search term is provided
-      const filter = searchTag 
+      const filter = searchTag
         ? { tags: { $regex: searchTag, $options: 'i' } } // Case-insensitive search for tags
         : {}; // No filter if no search term is provided
-    
+
       try {
         // Find resources that match the search criteria and paginate results
         const cursor = resourcesCollection.find(filter).skip(skip).limit(limit);
         const results = await cursor.toArray();
         const totalItems = await resourcesCollection.countDocuments(filter); // Count matching resources
-    
+
         // Send response with the filtered and paginated resources
         res.send({
           resources: results,
@@ -388,8 +395,8 @@ const verifyAdmin = async (req, res, next) => {
         res.status(500).send({ message: 'Error fetching resources' });
       }
     });
-    
-    
+
+
     app.post('/resources', async (req, res) => {
       const newResource = req.body;
       const result = await resourcesCollection.insertOne(newResource
@@ -399,41 +406,41 @@ const verifyAdmin = async (req, res, next) => {
     );
     app.patch('/resources/upvote/:postId', async (req, res) => {
       try {
-          const { postId } = req.params;
-  
-          const query = { _id: new ObjectId(postId) };
-          const result = await resourcesCollection.updateOne(query, { $inc: { upvote: 1 } });
-          if (result.modifiedCount === 1) {
-              res.status(200).json({ message: 'Upvote count updated successfully' });
-          } else {
-              res.status(404).json({ error: 'Query document not found' });
-          }
+        const { postId } = req.params;
+
+        const query = { _id: new ObjectId(postId) };
+        const result = await resourcesCollection.updateOne(query, { $inc: { upvote: 1 } });
+        if (result.modifiedCount === 1) {
+          res.status(200).json({ message: 'Upvote count updated successfully' });
+        } else {
+          res.status(404).json({ error: 'Query document not found' });
+        }
       } catch (error) {
-          console.error('Error upvoting post:', error);
-          res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error upvoting post:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
       }
-  });
-  
-  // Backend API for handling downvotes
-  app.patch('/resources/downvote/:postId', async (req, res) => {
+    });
+
+    // Backend API for handling downvotes
+    app.patch('/resources/downvote/:postId', async (req, res) => {
       try {
-          const { postId } = req.params;
-          // console.log('postId:', postId);
-         console.log('postId:', postId);
-         
-          const query = { _id: new ObjectId(postId) };
-          const result = await resourcesCollection.updateOne(query, { $inc: { downvote: 1 } });
-  
-          if (result.modifiedCount === 1) {
-              res.status(200).json({ message: 'Downvote count updated successfully' });
-          } else {
-              res.status(404).json({ error: 'Query document not found' });
-          }
+        const { postId } = req.params;
+        // console.log('postId:', postId);
+        console.log('postId:', postId);
+
+        const query = { _id: new ObjectId(postId) };
+        const result = await resourcesCollection.updateOne(query, { $inc: { downvote: 1 } });
+
+        if (result.modifiedCount === 1) {
+          res.status(200).json({ message: 'Downvote count updated successfully' });
+        } else {
+          res.status(404).json({ error: 'Query document not found' });
+        }
       } catch (error) {
-          console.error('Error downvoting post:', error);
-          res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error downvoting post:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
       }
-  });
+    });
     app.get('/newsletterSubscribers', async (req, res) => {
       const cursor = newsletterSubscribers.find({});
       const results = await cursor.toArray();
@@ -448,34 +455,34 @@ const verifyAdmin = async (req, res, next) => {
     );
 
     ///payment related api
-    
-app.post("/create_payment_intent", async (req, res) => {
-  const { price } = req.body;
-  const amount = parseInt(price * 100);
-  const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount,
-      currency: 'usd',
 
-      payment_method_types: ['card']
-  });
+    app.post("/create_payment_intent", async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
 
-  res.send({
-      clientSecret: paymentIntent.client_secret
+        payment_method_types: ['card']
+      });
 
-  });
-  // console.log('secret', paymentIntent.client_secret);
-}
-);
-app.post('/payments', async (req, res) => {
-  const payment = req.body;
-  const paymentResult = await paymentCollection.insertOne(payment);
+      res.send({
+        clientSecret: paymentIntent.client_secret
 
-
-  console.log('payment info', payment);
+      });
+      // console.log('secret', paymentIntent.client_secret);
+    }
+    );
+    app.post('/payments', async (req, res) => {
+      const payment = req.body;
+      const paymentResult = await paymentCollection.insertOne(payment);
 
 
-  res.send(payment);
-})
+      console.log('payment info', payment);
+
+
+      res.send(payment);
+    })
 
   } finally {
     // Ensures that the client will close when you finish/error
