@@ -395,6 +395,17 @@ async function run() {
         res.status(500).send({ message: 'Error fetching resources' });
       }
     });
+    app.get('/resources/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await resourcesCollection.findOne(query);
+        res.send(result);
+      } catch (error) {
+        console.error('Error fetching resource:', error);
+        res.status(500).send({ message: 'Failed to fetch resource', error });
+      }
+    });
 
 
     app.post('/resources', async (req, res) => {
