@@ -418,29 +418,30 @@ async function run() {
     app.post('/resources/:id/comments', async (req, res) => {
       try {
         const resourceId = req.params.id;
-        const { author, text } = req.body;
+        const { user, comment } = req.body;
 
-        const comment = {
-          author,
-          text,
+        const newComment = {
+          author: user,
+          text: comment,
           createdAt: new Date(),
         };
 
         const result = await resourcesCollection.updateOne(
           { _id: new ObjectId(resourceId) },
-          { $push: { comments: comment } }
+          { $push: { comments: newComment } }
         );
 
         if (result.modifiedCount === 0) {
           return res.status(404).send({ message: 'Resource not found' });
         }
 
-        res.send({ message: 'Comment added successfully', comment });
+        res.send({ message: 'Comment added successfully', comment: newComment });
       } catch (error) {
         console.error('Error posting comment:', error);
         res.status(500).send({ message: 'Error posting comment' });
       }
     });
+
 
     // Endpoint to fetch all comments for a specific resource
     app.get('/resources/:id/comments', async (req, res) => {
