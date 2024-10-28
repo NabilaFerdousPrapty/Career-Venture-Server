@@ -245,6 +245,13 @@ async function run() {
         results,
       });
     });
+    app.get('/jobOpenning/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await jobOpeningCollection.findOne(query);
+      res.send(result);
+    }
+    );
 
     app.get('/bootCamps', async (req, res) => {
       const page = parseInt(req.query.page) || 1; // Default to page 1
