@@ -200,6 +200,19 @@ async function run() {
         res.status(500).send({ message: 'Server error' });
       }
     });
+    //get a specific mentor details by id
+    app.get('/mentors/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await MentorsCollection.findOne(query);
+        res.send(result);
+      } catch (error) {
+        console.error('Error fetching mentor:', error);
+        res.status(500).send({ message: 'Failed to fetch mentor', error });
+      }
+    });
+
 
     // Reject mentor route
 
