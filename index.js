@@ -1,9 +1,15 @@
 require('dotenv').config();
 const express = require('express');
+const cloudinary = require('cloudinary').v2; // Use v2 for the latest features
 const app = express();
 const port = process.env.PORT || 8000;
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+cloudinary.config({
+  cloud_name: process.env.Cloud_Name,
+  api_key: process.env.Api_Key,
+  api_secret: process.env.Api_Secret,
+});
 app.use(cors({
   origin: ["http://localhost:5173",
     "http://localhost:5174",
@@ -311,9 +317,10 @@ async function run() {
       });
     });
 
-    app.post('/jobApplications', async (req, res) => {
-      const newJobApplication = req.body;
-      const result = await jobApplicationCollection.insertOne(newJobApplication);
+    app.post('/jobOpenning/:id/apply', async (req, res) => {
+      const jobId = req.params.id;
+      const application = req.body;
+      const result = await jobApplicationCollection.insertOne({ ...application, jobId });
       res.send(result);
     });
     app.get('/LearnAboutBootCamp/:id', async (req, res) => {
