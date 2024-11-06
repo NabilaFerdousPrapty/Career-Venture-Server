@@ -326,20 +326,36 @@ async function run() {
       }
     });
 
-
     app.post('/jobOpenning/:id/apply', async (req, res) => {
       const jobId = req.params.id;
-      const application = req.body;
-      const result = await jobApplicationCollection.insertOne({ ...application, jobId });
-      res.send(result);
+      const { email, resumeLink, portfolio } = req.body;
+
+      // Construct application object including applicant's email
+      const application = {
+        jobId,
+        email,
+        resumeLink,
+        portfolio,
+        appliedAt: new Date(),
+      };
+
+      try {
+        const result = await jobApplicationCollection.insertOne(application);
+        res.status(201).send({ success: true, message: "Application submitted successfully", applicationId: result.insertedId });
+      } catch (error) {
+        console.error("Error saving application:", error);
+        res.status(500).send({ success: false, message: "Failed to submit application. Please try again." });
+      }
     });
+
     app.get('/jobOpenning/:id/applications', async (req, res) => {
       const jobId = req.params.id;
-      const query = { jobId };
+      const query = { jobId: jobId };
       const cursor = jobApplicationCollection.find(query);
       const results = await cursor.toArray();
       res.send(results);
-    });
+    }
+    );
     //get all job applications by an email
     app.get('/jobApplications/:email', async (req, res) => {
       const email = req.params.email;
