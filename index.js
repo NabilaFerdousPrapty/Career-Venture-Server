@@ -301,21 +301,31 @@ async function run() {
     });
 
     app.get('/jobApplications', async (req, res) => {
-      const page = parseInt(req.query.page) || 1; // Get the page number from the query params, default to 1
-      const limit = parseInt(req.query.limit) || 6; // Set the limit per page (default is 10)
-      const skip = (page - 1) * limit; // Calculate how many documents to skip
+      try {
+        const page = parseInt(req.query.page) || 1; // Default to 1
+        const limit = parseInt(req.query.limit) || 6; // Default to 6 per page
+        const search = req.query.search || ""; // Handle search query
 
-      const query = {};
-      const cursor = jobApplicationCollection.find(query);
-      const totalJobApplications = await jobApplicationCollection.countDocuments(query); // Total number of job applications
-      const jobApplications = await cursor.skip(skip).limit(limit).toArray(); // Apply pagination
+        const query = search ? { position: { $regex: search, $options: "i" } } : {}; // Search condition
+        const skip = (page - 1) * limit; // Skip calculation
 
-      res.send({
-        jobApplications,
-        currentPage: page,
-        totalPages: Math.ceil(totalJobApplications / limit), // Total pages based on job application count and limit
-      });
+        const totalJobApplications = await jobApplicationCollection.countDocuments(query);
+        const jobApplications = await jobApplicationCollection.find(query)
+          .skip(skip)
+          .limit(limit)
+          .toArray();
+
+        res.send({
+          jobApplications,
+          currentPage: page,
+          totalPages: Math.ceil(totalJobApplications / limit),
+        });
+      } catch (error) {
+        console.error("Error fetching job applications:", error);
+        res.status(500).send({ error: "Failed to fetch job applications" });
+      }
     });
+
 
     app.post('/jobOpenning/:id/apply', async (req, res) => {
       const jobId = req.params.id;
