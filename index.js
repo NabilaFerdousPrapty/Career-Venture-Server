@@ -266,11 +266,13 @@ async function run() {
     });
     app.get('/jobOpenning/:id', async (req, res) => {
       const id = req.params.id;
+      console.log(id);
+
       const query = { _id: new ObjectId(id) };
       const result = await jobOpeningCollection.findOne(query);
       res.send(result);
-    }
-    );
+    });
+
 
     app.get('/bootCamps', async (req, res) => {
       const page = parseInt(req.query.page) || 1; // Default to page 1
@@ -328,15 +330,18 @@ async function run() {
 
     app.post('/jobOpenning/:id/apply', async (req, res) => {
       const jobId = req.params.id;
-      const { email, resumeLink, portfolio } = req.body;
+      const { email, resumeLink, portfolio, photo, phone, address } = req.body;
 
-      // Construct application object including applicant's email
+      // Construct application object including applicant's email, photo, and other fields
       const application = {
         jobId,
         email,
         resumeLink,
         portfolio,
+        photo,  // Include the photo field in the application data
         appliedAt: new Date(),
+        phone,
+        address,
       };
 
       try {
@@ -348,14 +353,14 @@ async function run() {
       }
     });
 
+
     app.get('/jobOpenning/:id/applications', async (req, res) => {
       const jobId = req.params.id;
-      const query = { jobId: jobId };
+      const query = { jobId };
       const cursor = jobApplicationCollection.find(query);
       const results = await cursor.toArray();
       res.send(results);
-    }
-    );
+    });
     //get all job applications by an email
     app.get('/jobApplications/:email', async (req, res) => {
       const email = req.params.email;
