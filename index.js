@@ -323,6 +323,21 @@ async function run() {
       const result = await jobApplicationCollection.insertOne({ ...application, jobId });
       res.send(result);
     });
+    app.get('/jobOpenning/:id/applications', async (req, res) => {
+      const jobId = req.params.id;
+      const query = { jobId };
+      const cursor = jobApplicationCollection.find(query);
+      const results = await cursor.toArray();
+      res.send(results);
+    });
+    //get all job applications by an email
+    app.get('/jobApplications/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const cursor = jobApplicationCollection.find(query);
+      const results = await cursor.toArray();
+      res.send(results);
+    });
     app.get('/LearnAboutBootCamp/:id', async (req, res) => {
       try {
         const id = req.params.id;
