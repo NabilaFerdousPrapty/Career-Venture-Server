@@ -330,10 +330,11 @@ async function run() {
 
     app.post('/jobOpenning/:id/apply', async (req, res) => {
       const jobId = req.params.id;
-      const { email, resumeLink, portfolio, photo, phone, address } = req.body;
+      const { name, email, resumeLink, portfolio, photo, phone, address } = req.body;
 
       // Construct application object including applicant's email, photo, and other fields
       const application = {
+        applicant: name,
         jobId,
         email,
         resumeLink,
