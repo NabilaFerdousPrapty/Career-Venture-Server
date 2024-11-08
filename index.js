@@ -78,7 +78,7 @@ async function run() {
     const resourcesCollection = client.db("Career-Venture").collection("Resources");
     const newsletterSubscribers = client.db("Career-Venture").collection("newsletterSubscribers");
     const paymentCollection = client.db("Career-Venture").collection("payments");
-
+    const wishlistCollection = client.db("Career-Venture").collection("wishlist");
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
       const query = { email: email };
@@ -300,6 +300,37 @@ async function run() {
         totalPages,
         totalBootCamps
       });
+    });
+    app.post('/wishlist', async (req, res) => {
+      const { bootCampName, bootCampPrice, bootCampMentors } = req.body;
+      const userId = req.user._id;  // Get the user ID from the token payload
+
+      try {
+        // Check if the bootcamp is already in the user's wishlist
+        const existingWishlistItem = await wishlistCollection.findOne({
+          user: userId,
+          bootCampName: bootCampName,
+        });
+
+        if (existingWishlistItem) {
+          return res.status(400).json({ message: 'This bootcamp is already in your wishlist.' });
+        }
+
+        // Insert the new wishlist item into the collection
+        const newWishlistItem = {
+          user: userId,
+          bootCampName,
+          bootCampPrice,
+          bootCampMentors,
+        };
+
+        await wishlistCollection.insertOne(newWishlistItem);
+
+        return res.status(200).json({ message: 'Bootcamp added to your wishlist!' });
+      } catch (error) {
+        console.error('Error adding to wishlist:', error);
+        return res.status(500).json({ message: 'Server error. Please try again.' });
+      }
     });
 
     app.get('/jobApplications', async (req, res) => {
