@@ -80,6 +80,7 @@ async function run() {
     const paymentCollection = client.db("Career-Venture").collection("payments");
     const wishlistCollection = client.db("Career-Venture").collection("wishlist");
     const slotsCollection = client.db("Career-Venture").collection("slotsOfMentors");
+    const slotBookingCollection = client.db("Career-Venture").collection("slotBooking");
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
       const query = { email: email };
@@ -232,6 +233,41 @@ async function run() {
         res.status(500).send({ message: 'Failed to fetch mentor slots', error });
       }
     });
+    //delete a slot with id
+    app.delete('/mentor/slots/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await slotsCollection.deleteOne(query);
+        res.send(result);
+      } catch (error) {
+        console.error('Error deleting slot:', error);
+        res.status(500).send({ message: 'Failed to delete slot', error });
+      }
+    });
+    //book a slot with mentor id
+    app.post('/mentor/slot/book/:id', async (req, res) => {
+      try {
+        const mentorId = req.params.id;
+        const { user, slotId, date } = req.body;
+
+        const newBooking = {
+          mentor_id: mentorId,
+          user: user,
+          slot_id: slotId,
+          date: date,
+          bookedAt: new Date(),
+        };
+
+        const result = await slotBookingCollection.insertOne(newBooking);
+        res.status(201).send({ message: 'Slot booked successfully', bookingId: result.insertedId });
+      } catch (error) {
+        console.error('Error booking slot:', error);
+        res.status(500).send({ message: 'Failed to book slot', error });
+      }
+    });
+
+    //pay for a slot
 
 
     // Reject mentor route
