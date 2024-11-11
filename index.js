@@ -332,6 +332,35 @@ async function run() {
         return res.status(500).json({ message: 'Server error. Please try again.' });
       }
     });
+    app.get('/wishlist', async (req, res) => {
+      const userId = req.user._id;  // Get the user ID from the token payload
+
+      try {
+        const cursor = wishlistCollection.find({ user: userId });
+        const results = await cursor.toArray();
+        return res.status(200).json(results);
+      } catch (error) {
+        console.error('Error fetching wishlist:', error);
+        return res.status(500).json({ message: 'Server error. Please try again.' });
+      }
+    });
+    app.delete('/wishlist/:id', async (req, res) => {
+      const userId = req.user._id;  // Get the user ID from the token payload
+      const wishlistId = req.params.id;
+
+      try {
+        const result = await wishlistCollection.deleteOne({ _id: new ObjectId(wishlistId), user: userId });
+
+        if (result.deletedCount === 0) {
+          return res.status(404).json({ message: 'Item not found in your wishlist.' });
+        }
+
+        return res.status(200).json({ message: 'Item removed from your wishlist.' });
+      } catch (error) {
+        console.error('Error removing from wishlist:', error);
+        return res.status(500).json({ message: 'Server error. Please try again.' });
+      }
+    });
 
     app.get('/jobApplications', async (req, res) => {
       try {
