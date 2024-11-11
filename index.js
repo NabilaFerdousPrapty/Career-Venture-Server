@@ -249,8 +249,26 @@ async function run() {
     app.post('/mentor/slot/book/:id', async (req, res) => {
       try {
         const mentorId = req.params.id;
+        console.log('Mentor ID:', mentorId);
+
         const { user, slotId, date } = req.body;
 
+        // Define the query to match the specific slot for the given mentor
+        const query = {
+          mentor_id: mentorId,
+
+          status: { $ne: "booked" }, // Ensures slot is not already booked
+        };
+
+        // Update slot status to booked if available
+        const update = { $set: { status: "booked" } };
+        const slotUpdateResult = await slotsCollection.updateOne(query, update);
+
+        if (slotUpdateResult.modifiedCount === 0) {
+          return res.status(409).send({ message: 'Slot is already booked or does not exist' });
+        }
+
+        // Create a new booking document
         const newBooking = {
           mentor_id: mentorId,
           user: user,
@@ -259,13 +277,16 @@ async function run() {
           bookedAt: new Date(),
         };
 
-        const result = await slotBookingCollection.insertOne(newBooking);
-        res.status(201).send({ message: 'Slot booked successfully', bookingId: result.insertedId });
+        // Insert booking into the booking collection
+        const bookingResult = await slotBookingCollection.insertOne(newBooking);
+
+        res.status(201).send({ message: 'Slot booked successfully', bookingId: bookingResult.insertedId });
       } catch (error) {
         console.error('Error booking slot:', error);
-        res.status(500).send({ message: 'Failed to book slot', error });
+        res.status(500).send({ message: 'Failed to book slot', error: error.message });
       }
     });
+
 
     //pay for a slot
 
