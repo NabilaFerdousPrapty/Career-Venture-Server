@@ -738,7 +738,7 @@ async function run() {
       const paymentResult = await paymentCollection.insertOne(payment);
 
 
-      console.log('payment info', payment);
+      // console.log('payment info', payment);
 
 
       res.send(payment);
