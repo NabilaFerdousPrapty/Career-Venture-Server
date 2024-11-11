@@ -79,6 +79,7 @@ async function run() {
     const newsletterSubscribers = client.db("Career-Venture").collection("newsletterSubscribers");
     const paymentCollection = client.db("Career-Venture").collection("payments");
     const wishlistCollection = client.db("Career-Venture").collection("wishlist");
+    const slotsCollection = client.db("Career-Venture").collection("slotsOfMentors");
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
       const query = { email: email };
@@ -216,6 +217,19 @@ async function run() {
       } catch (error) {
         console.error('Error fetching mentor:', error);
         res.status(500).send({ message: 'Failed to fetch mentor', error });
+      }
+    });
+    //get mentors all slots by mentor id
+    app.get('/mentor/slots/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { mentor_id: id, status: 'available' };
+        const cursor = slotsCollection.find(query);
+        const results = await cursor.toArray();
+        res.send(results);
+      } catch (error) {
+        console.error('Error fetching mentor slots:', error);
+        res.status(500).send({ message: 'Failed to fetch mentor slots', error });
       }
     });
 
