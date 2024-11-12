@@ -97,6 +97,13 @@ async function run() {
       const results = await cursor.toArray();
       res.send(results);
     });
+    app.get("/testimonial/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await testimonialCollection.findOne(query);
+      res.send(result);
+    }
+    );
 
     app.post('/testimonials', async (req, res) => {
       const newTestimonial = req.body;
@@ -196,7 +203,7 @@ async function run() {
 
         const update = { $set: { role: 'mentor' } };
         const result = await userCollections.updateOne(query, update);
-        console.log('Approve Result:', result); // Debugging log
+        // console.log('Approve Result:', result); // Debugging log
 
         if (result.matchedCount === 0) {
           return res.status(400).send({ message: 'No matching document found to update' });
@@ -337,7 +344,7 @@ async function run() {
     });
     app.get('/jobOpenning/:id', async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      // console.log(id);
 
       const query = { _id: new ObjectId(id) };
       const result = await jobOpeningCollection.findOne(query);
@@ -373,8 +380,7 @@ async function run() {
       });
     });
     app.post('/wishlist', async (req, res) => {
-      const { bootCampName, bootCampPrice, bootCampMentors } = req.body;
-      const userId = req.user._id;  // Get the user ID from the token payload
+      const { bootCampName, bootCampPrice, bootCampMentors, userId } = req.body; // Get userId directly from the body
 
       try {
         // Check if the bootcamp is already in the user's wishlist
@@ -403,6 +409,7 @@ async function run() {
         return res.status(500).json({ message: 'Server error. Please try again.' });
       }
     });
+
     app.get('/wishlist', async (req, res) => {
       const userId = req.user._id;  // Get the user ID from the token payload
 
@@ -686,7 +693,7 @@ async function run() {
       try {
         const { postId } = req.params;
         // console.log('postId:', postId);
-        console.log('postId:', postId);
+        // console.log('postId:', postId);
 
         const query = { _id: new ObjectId(postId) };
         const result = await resourcesCollection.updateOne(query, { $inc: { downvote: 1 } });
