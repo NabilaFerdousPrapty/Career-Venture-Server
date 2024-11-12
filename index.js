@@ -631,12 +631,17 @@ async function run() {
     app.post('/resources/:id/comments', async (req, res) => {
       try {
         const resourceId = req.params.id;
-        const { user, comment } = req.body;
+        const { user, u_image, comment, date } = req.body;
 
+        // Log the received data to verify
+        // console.log("Received Data:", req.body);
+
+        // Creating the comment object in the required structure
         const newComment = {
-          author: user,
-          text: comment,
-          createdAt: new Date(),
+          user: user,            // Keeps the 'user' field as is
+          u_image: u_image,      // Keeps the 'u_image' field as is
+          comment: comment,      // Keeps the 'comment' field as is
+          date: date,            // Keeps the 'date' field as is
         };
 
         const result = await resourcesCollection.updateOne(
@@ -648,12 +653,15 @@ async function run() {
           return res.status(404).send({ message: 'Resource not found' });
         }
 
+        // Send back the success response
         res.send({ message: 'Comment added successfully', comment: newComment });
       } catch (error) {
         console.error('Error posting comment:', error);
         res.status(500).send({ message: 'Error posting comment' });
       }
     });
+
+
 
 
     // Endpoint to fetch all comments for a specific resource
