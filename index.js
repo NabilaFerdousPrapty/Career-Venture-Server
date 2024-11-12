@@ -380,12 +380,12 @@ async function run() {
       });
     });
     app.post('/wishlist', async (req, res) => {
-      const { bootCampName, bootCampPrice, bootCampMentors, userId } = req.body; // Get userId directly from the body
+      const { bootCampName, bootCampPrice, bootCampMentors, userEmail } = req.body; // Get userEmail directly from the body
 
       try {
-        // Check if the bootcamp is already in the user's wishlist
+        // Check if the bootcamp is already in the user's wishlist using userEmail
         const existingWishlistItem = await wishlistCollection.findOne({
-          user: userId,
+          user: userEmail,  // Use userEmail to check existing wishlist
           bootCampName: bootCampName,
         });
 
@@ -395,7 +395,7 @@ async function run() {
 
         // Insert the new wishlist item into the collection
         const newWishlistItem = {
-          user: userId,
+          user: userEmail,  // Store the user's email
           bootCampName,
           bootCampPrice,
           bootCampMentors,
@@ -409,6 +409,7 @@ async function run() {
         return res.status(500).json({ message: 'Server error. Please try again.' });
       }
     });
+
 
     app.get('/wishlist', async (req, res) => {
       const userId = req.user._id;  // Get the user ID from the token payload
