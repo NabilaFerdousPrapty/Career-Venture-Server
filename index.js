@@ -379,6 +379,12 @@ async function run() {
         totalBootCamps
       });
     });
+    app.post('/bootCamps', async (req, res) => {
+      const newBootCamp = req.body;
+      const result = await BootCamps.insertOne(newBootCamp);
+      res.send(result);
+    }
+    );
     app.post('/wishlist', async (req, res) => {
       const { bootCampName, bootCampPrice, bootCampMentors, userEmail } = req.body; // Get userEmail directly from the body
 
