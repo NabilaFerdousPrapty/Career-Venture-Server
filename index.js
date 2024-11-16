@@ -381,10 +381,14 @@ async function run() {
     });
     app.post('/bootCamps', async (req, res) => {
       const newBootCamp = req.body;
-      const result = await BootCamps.insertOne(newBootCamp);
-      res.send(result);
-    }
-    );
+      try {
+        const result = await BootCamps.insertOne(newBootCamp);
+        res.status(201).send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Failed to add bootcamp', error });
+      }
+    });
+
     app.post('/wishlist', async (req, res) => {
       const { bootCampName, bootCampPrice, bootCampMentors, userEmail } = req.body; // Get userEmail directly from the body
 
