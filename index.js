@@ -810,6 +810,39 @@ async function run() {
 
       res.send(payment);
     })
+    app.get('/payments', async (req, res) => {
+      const cursor = paymentCollection.find({});
+      const results = await cursor.toArray();
+      res.send(results);
+    });
+    app.get('/payments/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await paymentCollection.findOne(query);
+      res.send(result);
+    });
+    app.put('/payments/approve/:id', async (req, res) => {
+      const id = req.params.id;
+      const { status } = req.body; // assuming the status is passed in the request body
+
+      if (status !== 'approved') {
+        return res.status(400).send({ error: 'Invalid status' });
+      }
+
+      try {
+        const result = await paymentCollection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: { status: 'approved' } }
+        );
+        if (result.modifiedCount === 0) {
+          return res.status(404).send({ error: 'Payment not found' });
+        }
+        res.send({ message: 'Payment approved' });
+      } catch (err) {
+        res.status(500).send({ error: 'Failed to approve payment' });
+      }
+    });
+
 
   } finally {
     // Ensures that the client will close when you finish/error
