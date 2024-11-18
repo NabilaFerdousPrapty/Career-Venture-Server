@@ -81,6 +81,7 @@ async function run() {
     const wishlistCollection = client.db("Career-Venture").collection("wishlist");
     const slotsCollection = client.db("Career-Venture").collection("slotsOfMentors");
     const slotBookingCollection = client.db("Career-Venture").collection("slotBooking");
+    const JobApplicationResponseCollection = client.db("Career-Venture").collection("JobApplicationResponse");
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
       const query = { email: email };
@@ -350,7 +351,19 @@ async function run() {
       const result = await jobOpeningCollection.findOne(query);
       res.send(result);
     });
-
+    //post job application response
+    app.post('/jobApplicationResponse', async (req, res) => {
+      const newJobApplicationResponse = req.body;
+      const result = await JobApplicationResponseCollection.insertOne(newJobApplicationResponse);
+      res.send(result);
+    });
+    app.get('/jobApplicationResponse/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const cursor = JobApplicationResponseCollection.find(query);
+      const results = await cursor.toArray();
+      res.send(results);
+    });
 
     app.get('/bootCamps', async (req, res) => {
       const page = parseInt(req.query.page) || 1; // Default to page 1
@@ -455,9 +468,9 @@ async function run() {
       try {
         const page = parseInt(req.query.page) || 1; // Default to 1
         const limit = parseInt(req.query.limit) || 6; // Default to 6 per page
-        const search = req.query.search || ""; // Handle search query
 
-        const query = search ? { position: { $regex: search, $options: "i" } } : {}; // Search condition
+        const query = { status: "pending" }; // Only filter by status: "pending"
+
         const skip = (page - 1) * limit; // Skip calculation
 
         const totalJobApplications = await jobApplicationCollection.countDocuments(query);
@@ -476,6 +489,34 @@ async function run() {
         res.status(500).send({ error: "Failed to fetch job applications" });
       }
     });
+    //change the status of a job application
+    app.patch('/jobApplications/statusChange/:id', async (req, res) => {
+      const id = req.params.id;
+      const { status } = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const update = { $set: { status: 'reviewed' } };
+
+      try {
+        const result = await jobApplicationCollection.updateOne(query, update);
+        res.send(result);
+      } catch (error) {
+        console.error('Error updating job application status:', error);
+        res.status(500).send({ message: 'Failed to update job application status' });
+      }
+    });
+
+    app.get('/jobApplications/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await jobApplicationCollection.findOne(query);
+        res.send(result);
+      } catch (error) {
+        console.error('Error fetching job application:', error);
+        res.status(500).send({ message: 'Failed to fetch job application', error });
+      }
+    });
 
     app.post('/jobOpenning/:id/apply', async (req, res) => {
       const jobId = req.params.id;
@@ -483,7 +524,7 @@ async function run() {
 
       // Construct application object including applicant's email, photo, and other fields
       const application = {
-        applicant: name,
+        applicant_name: name,
         jobId,
         email,
         resumeLink,
