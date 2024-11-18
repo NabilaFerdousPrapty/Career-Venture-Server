@@ -821,6 +821,15 @@ async function run() {
       const result = await paymentCollection.findOne(query);
       res.send(result);
     });
+    //fetch payment with MentorName
+    app.get('/payments/mentor/:mentorName', async (req, res) => {
+      const mentorName = req.params.mentorName;
+      const query = { mentorName: mentorName };
+      const cursor = paymentCollection.find(query);
+      const results = await cursor.toArray();
+      res.send(results);
+    });
+
     app.put('/payments/approve/:id', async (req, res) => {
       const id = req.params.id;
       const { status } = req.body; // assuming the status is passed in the request body
