@@ -107,9 +107,14 @@ async function run() {
     );
 
     app.post('/testimonials', async (req, res) => {
-      const newTestimonial = req.body;
-      const result = await testimonialCollection.insertOne(newTestimonial);
-      res.send(result);
+      try {
+        const newTestimonial = req.body;
+        const result = await testimonialCollection.insertOne(newTestimonial);
+        res.send(result);
+      } catch (error) {
+        console.error('Error inserting testimonial:', error);
+        res.status(500).send({ message: 'Failed to submit testimonial' });
+      }
     });
 
     app.post('/users', async (req, res) => {
@@ -896,10 +901,10 @@ async function run() {
       res.send(results);
     }
     );
-    //fetch payment with MentorName
-    app.get('/payments/mentor/:mentorName', async (req, res) => {
-      const mentorName = req.params.mentorName;
-      const query = { mentorName: mentorName };
+    //fetch payment with Mentor id
+    app.get('/payments/mentor/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { mentorId: id };
       const cursor = paymentCollection.find(query);
       const results = await cursor.toArray();
       res.send(results);
