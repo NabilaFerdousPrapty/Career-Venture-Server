@@ -216,6 +216,14 @@ async function run() {
         res.status(500).send({ message: 'Server error' });
       }
     });
+    //get mentor details by email
+    app.get('/mentors/details/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await MentorsCollection.findOne(query);
+      res.send(result);
+    }
+    );
     //get a specific mentor details by id
     app.get('/mentors/:id', async (req, res) => {
       try {
@@ -228,7 +236,7 @@ async function run() {
         res.status(500).send({ message: 'Failed to fetch mentor', error });
       }
     });
-    //get mentors all slots by mentor id
+    //get mentors all available slots by mentor id
     app.get('/mentor/slots/:id', async (req, res) => {
       try {
         const id = req.params.id;
@@ -239,6 +247,32 @@ async function run() {
       } catch (error) {
         console.error('Error fetching mentor slots:', error);
         res.status(500).send({ message: 'Failed to fetch mentor slots', error });
+      }
+    });
+    //get all slots of a mentor
+    app.get('/mentor/slots/all/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { mentor_id: id };
+        const cursor = slotsCollection.find(query);
+        const results = await cursor.toArray();
+        res.send(results);
+      } catch (error) {
+        console.error('Error fetching mentor slots:', error);
+        res.status(500).send({ message: 'Failed to fetch mentor slots', error });
+      }
+    });
+    //edit a slot with id
+    app.patch('/mentor/slots/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const update = { $set: req.body };
+        const result = await slotsCollection.updateOne(query, update);
+        res.send(result);
+      } catch (error) {
+        console.error('Error updating slot:', error);
+        res.status(500).send({ message: 'Failed to update slot', error });
       }
     });
     //delete a slot with id
@@ -253,6 +287,19 @@ async function run() {
         res.status(500).send({ message: 'Failed to delete slot', error });
       }
     });
+    //add a slot for a mentor with mentor id
+    app.post('/mentor/slots/:id', async (req, res) => {
+      try {
+        const mentorId = req.params.id;
+        const newSlot = { mentor_id: mentorId, ...req.body };
+        const result = await slotsCollection.insertOne(newSlot);
+        res.send(result);
+      } catch (error) {
+        console.error('Error adding slot:', error);
+        res.status(500).send({ message: 'Failed to add slot', error });
+      }
+    });
+
     //book a slot with mentor id
     app.post('/mentor/slot/book/:id', async (req, res) => {
       try {
