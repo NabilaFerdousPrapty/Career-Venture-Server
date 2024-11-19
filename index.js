@@ -950,6 +950,14 @@ async function run() {
         res.status(500).send({ error: 'Failed to approve payment' });
       }
     });
+    //user profile update
+    app.patch('/users/update/:email', async (req, res) => {
+      const email = req.params.email;
+      const update = req.body;
+      const query = { email: email };
+      const result = await userCollections.updateOne(query, { $set: update });
+      res.send(result);
+    });
 
 
   } finally {
