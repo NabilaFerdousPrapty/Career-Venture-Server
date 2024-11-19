@@ -841,6 +841,14 @@ async function run() {
       const result = await paymentCollection.findOne(query);
       res.send(result);
     });
+    app.get('/payments/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const cursor = paymentCollection.find(query);
+      const results = await cursor.toArray();
+      res.send(results);
+    }
+    );
     //fetch payment with MentorName
     app.get('/payments/mentor/:mentorName', async (req, res) => {
       const mentorName = req.params.mentorName;
