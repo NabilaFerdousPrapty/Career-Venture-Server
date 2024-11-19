@@ -673,12 +673,32 @@ async function run() {
 
 
     app.post('/resources', async (req, res) => {
-      const newResource = req.body;
-      const result = await resourcesCollection.insertOne(newResource
-      );
-      res.send(result);
-    }
-    );
+      try {
+        const { name, details, description, author, date, imageLink, tags, resourceLink } = req.body;
+
+        // Adding default values for upvote, downvote, and comments
+        const newResource = {
+          name,
+          details,
+          description,
+          author,
+          date: date || new Date(),
+          imageLink,
+          tags,
+          resourceLink,
+          upvote: 0,
+          downvote: 0,
+          comments: []
+        };
+
+        const result = await resourcesCollection.insertOne(newResource);
+        res.send(result);
+      } catch (error) {
+        console.error('Error while adding resource:', error);
+        res.status(500).send({ error: 'Failed to add resource' });
+      }
+    });
+
     app.post('/resources/:id/comments', async (req, res) => {
       try {
         const resourceId = req.params.id;
