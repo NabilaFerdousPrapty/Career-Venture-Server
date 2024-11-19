@@ -180,6 +180,12 @@ async function run() {
 
       res.send(user);
     });
+    //apply for being mentor
+    app.post('/mentor/apply', async (req, res) => {
+      const newMentor = req.body;
+      const result = await MentorsCollection.insertOne(newMentor);
+      res.send(result);
+    });
     app.get('/users/mentor/:email', async (req, res) => {
       const email = req.params.email;
       // console.log(email);
@@ -346,10 +352,23 @@ async function run() {
         res.status(500).send({ message: 'Failed to book slot', error: error.message });
       }
     });
+    //get my booked slots with user email
+    app.get('/mentor/slot/booked/:email', async (req, res) => {
+      try {
+        const email = req.params.email;
+        const query = { "user.email": email }; // Wrap the nested field in quotes
+        const cursor = slotBookingCollection.find(query);
+        const results = await cursor.toArray();
+        res.send(results);
+      } catch (error) {
+        console.error('Error fetching booked slots:', error);
+        res.status(500).send({ message: 'Failed to fetch booked slots', error });
+      }
+    });
+
 
 
     //pay for a slot
-
 
     // Reject mentor route
 
