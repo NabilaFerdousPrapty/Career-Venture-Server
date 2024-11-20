@@ -958,6 +958,54 @@ async function run() {
       const result = await userCollections.updateOne(query, { $set: update });
       res.send(result);
     });
+    app.patch("/users/admin-toggle/:email", async (req, res) => {
+      const email = req.params.email;
+      const { role } = req.body; // Expect 'admin' or 'user' in request body
+      const query = { email: email };
+      const update = { $set: { role: role } };
+
+      try {
+        const result = await userCollections.updateOne(query, update);
+        res.send(result);
+      } catch (error) {
+        console.error("Error updating user role:", error);
+        res.status(500).send({ message: "Failed to update user role" });
+      }
+    });
+    //block a user
+    app.patch('/users/toggleStatus/:email', async (req, res) => {
+      try {
+        const { email } = req.params;
+        const { status } = req.body; // Expect "blocked" or "active" in the request body
+
+        if (!email) {
+          return res.status(400).send({ message: "User email is required" });
+        }
+        if (!status || (status !== "blocked" && status !== "active")) {
+          return res
+            .status(400)
+            .send({ message: "Valid status ('blocked' or 'active') is required" });
+        }
+
+        const updatedUser = await userCollections.findOneAndUpdate(
+          { email },
+          { $set: { status } },
+          { new: true }
+        );
+
+        if (!updatedUser) {
+          return res.status(404).send({ message: "User not found" });
+        }
+
+        res
+          .status(200)
+          .send({ message: `User ${status} successfully`, user: updatedUser });
+      } catch (error) {
+        console.error("Error updating user status:", error);
+        res.status(500).send({ message: "Failed to update user status" });
+      }
+    }
+    );
 
 
   } finally {
