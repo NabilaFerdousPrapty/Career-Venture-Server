@@ -430,7 +430,10 @@ async function run() {
     });
     app.get('/jobApplicationResponse/:email', async (req, res) => {
       const email = req.params.email;
-      const query = { email: email };
+      const query = {
+        applicantEmail
+          : email
+      };
       const cursor = JobApplicationResponseCollection.find(query);
       const results = await cursor.toArray();
       res.send(results);
@@ -625,11 +628,29 @@ async function run() {
     });
     //get all job applications by an email
     app.get('/jobApplications/:email', async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email };
-      const cursor = jobApplicationCollection.find(query);
-      const results = await cursor.toArray();
-      res.send(results);
+      try {
+        const email = req.params.email;
+        const query = { email: email };  // Querying by email as a string
+        const cursor = jobApplicationCollection.find(query);
+        const results = await cursor.toArray();
+        res.send(results);
+      } catch (error) {
+        console.error('Error fetching job applications:', error);
+        res.status(500).send('Internal Server Error');
+      }
+    });
+    //get my job applications with user email
+    app.get('/jobApplications/user/:email', async (req, res) => {
+      try {
+        const email = req.params.email;
+        const query = { email: email };
+        const cursor = jobApplicationCollection.find(query);
+        const results = await cursor.toArray();
+        res.send(results);
+      } catch (error) {
+        console.error('Error fetching job applications:', error);
+        res.status(500).send('Internal Server Error');
+      }
     });
     app.get('/LearnAboutBootCamp/:id', async (req, res) => {
       try {
