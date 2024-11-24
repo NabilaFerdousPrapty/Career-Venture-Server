@@ -506,7 +506,14 @@ async function run() {
         return res.status(500).json({ message: 'Server error. Please try again.' });
       }
     });
-
+    //get wishlist items by user email
+    app.get('/wishlist/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { user: email };
+      const cursor = wishlistCollection.find(query);
+      const results = await cursor.toArray();
+      res.send(results);
+    });
 
     app.get('/wishlist', async (req, res) => {
       const userId = req.user._id;  // Get the user ID from the token payload
@@ -923,27 +930,7 @@ async function run() {
       res.send(payment);
     })
     //approve payment status
-    app.patch('/payments/approve/:id', async (req, res) => {
-      const id = req.params.id;
-      const { status } = req.body; // assuming the status is passed in the request body
 
-      if (status !== 'approved') {
-        return res.status(400).send({ error: 'Invalid status' });
-      }
-
-      try {
-        const result = await paymentCollection.updateOne(
-          { _id: new ObjectId(id) },
-          { $set: { status: 'approved' } }
-        );
-        if (result.modifiedCount === 0) {
-          return res.status(404).send({ error: 'Payment not found' });
-        }
-        res.send({ message: 'Payment approved' });
-      } catch (err) {
-        res.status(500).send({ error: 'Failed to approve payment' });
-      }
-    });
     app.get('/payments', async (req, res) => {
       const cursor = paymentCollection.find({});
       const results = await cursor.toArray();
