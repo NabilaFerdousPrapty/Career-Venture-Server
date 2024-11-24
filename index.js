@@ -476,6 +476,8 @@ async function run() {
       }
     });
 
+
+
     app.post('/wishlist', async (req, res) => {
       const { bootCampName, bootCampPrice, bootCampMentors, userEmail } = req.body; // Get userEmail directly from the body
 
