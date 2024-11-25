@@ -603,7 +603,7 @@ async function run() {
 
     app.post('/jobOpenning/:id/apply', async (req, res) => {
       const jobId = req.params.id;
-      const { name, email, resumeLink, portfolio, photo, phone, address } = req.body;
+      const { name, email, resumeLink, portfolio, photo, phone, address, status } = req.body;
 
       // Construct application object including applicant's email, photo, and other fields
       const application = {
@@ -616,6 +616,7 @@ async function run() {
         appliedAt: new Date(),
         phone,
         address,
+        status: status || 'pending', // Set the default status to 'pending'
       };
 
       try {
